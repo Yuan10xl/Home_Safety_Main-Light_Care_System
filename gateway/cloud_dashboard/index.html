@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#13213a">
+  <title>华为云雷达数据看板</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="app-header">
+    <div>
+      <p class="eyebrow">Huawei IoTDA / GatewayCare</p>
+      <h1>雷达照护数据看板</h1>
+    </div>
+    <div class="connection-strip">
+      <span id="connectionDot" class="dot"></span>
+      <span id="connectionText">等待云端数据</span>
+    </div>
+  </header>
+
+  <main class="shell">
+    <section class="kpi-grid" aria-label="核心数据">
+      <article class="kpi primary">
+        <span>活动强度</span>
+        <strong id="motionLevel">--</strong>
+        <div class="motion-meter"><i id="motionMeter"></i></div>
+      </article>
+      <article class="kpi" id="resultCard">
+        <span>识别结果</span>
+        <strong id="finalResult">--</strong>
+        <small id="resultHint">尚未收到属性上报</small>
+      </article>
+      <article class="kpi">
+        <span>最新服务</span>
+        <strong id="serviceId">--</strong>
+        <small>属性服务 ID</small>
+      </article>
+      <article class="kpi">
+        <span>样本数</span>
+        <strong id="sampleCount">0</strong>
+        <small id="lastUpdate">未更新</small>
+      </article>
+    </section>
+
+    <section class="main-grid">
+      <article class="panel chart-panel">
+        <div class="panel-head">
+          <div>
+            <h2>活动强度趋势</h2>
+            <p>最近 120 个云端样本</p>
+          </div>
+          <button id="exportButton" type="button" class="secondary">导出 CSV</button>
+        </div>
+        <canvas id="trendCanvas" width="1100" height="360"></canvas>
+      </article>
+
+      <article class="panel state-panel">
+        <h2>状态概览</h2>
+        <div class="status-row">
+          <span>数据源</span>
+          <strong id="sourceState">未连接</strong>
+        </div>
+        <div class="status-row">
+          <span>云端接收</span>
+          <strong id="cloudState">等待</strong>
+        </div>
+        <div class="status-row">
+          <span>安全状态</span>
+          <strong id="careState">--</strong>
+        </div>
+        <div class="status-row">
+          <span>低活动持续</span>
+          <strong id="staticTime">--</strong>
+        </div>
+        <div class="status-row">
+          <span>跌倒提示</span>
+          <strong id="fallResult">--</strong>
+        </div>
+        <div class="status-row">
+          <span>抽搐样风险特征提示</span>
+          <strong id="convulsionResult">--</strong>
+        </div>
+        <div class="status-row">
+          <span>低活动观察</span>
+          <strong id="lowObserve">--</strong>
+        </div>
+        <div class="status-row">
+          <span>雷达板</span>
+          <strong id="radarOnline">--</strong>
+        </div>
+        <div class="status-row">
+          <span>最近 Topic</span>
+          <strong id="lastTopic">--</strong>
+        </div>
+        <div class="status-row">
+          <span>最近消息</span>
+          <strong id="messageAge">--</strong>
+        </div>
+      </article>
+
+      <article class="panel distribution-panel">
+        <h2>强度分布</h2>
+        <div class="bar-row"><span>低</span><i><b id="lowBar"></b></i><em id="lowCount">0</em></div>
+        <div class="bar-row"><span>中</span><i><b id="midBar"></b></i><em id="midCount">0</em></div>
+        <div class="bar-row"><span>高</span><i><b id="highBar"></b></i><em id="highCount">0</em></div>
+      </article>
+
+      <article class="panel event-panel">
+        <div class="panel-head">
+          <div>
+            <h2>事件记录</h2>
+            <p>异常结果和连接变化</p>
+          </div>
+          <button id="clearButton" type="button" class="secondary">清空</button>
+        </div>
+        <ol id="eventList"></ol>
+      </article>
+    </section>
+
+    <section class="control-grid">
+      <article class="panel input-panel">
+        <h2>云端数据接入</h2>
+        <div class="control-line">
+          <input id="wsUrl" value="ws://127.0.0.1:8790/ws" spellcheck="false">
+          <button id="wsButton" type="button">连接 WebSocket</button>
+        </div>
+        <div class="control-line">
+          <input id="httpUrl" value="http://127.0.0.1:8790/latest" spellcheck="false">
+          <select id="pollInterval" aria-label="轮询间隔">
+            <option value="1000">1 秒</option>
+            <option value="2000" selected>2 秒</option>
+            <option value="5000">5 秒</option>
+          </select>
+          <button id="pollButton" type="button" class="secondary">HTTP 轮询</button>
+        </div>
+        <textarea id="jsonInput" spellcheck="false" placeholder='{"services":[{"service_id":"GatewayCare","properties":{"motion_level":24,"final_result":"normal"}}]}'></textarea>
+        <div class="button-row">
+          <button id="parseButton" type="button">解析 JSON</button>
+          <button id="demoButton" type="button" class="secondary">模拟云端数据</button>
+        </div>
+      </article>
+
+      <article class="panel raw-panel">
+        <h2>最近原始消息</h2>
+        <pre id="rawMessage">暂无数据</pre>
+      </article>
+    </section>
+  </main>
+
+  <script src="./app.js"></script>
+</body>
+</html>

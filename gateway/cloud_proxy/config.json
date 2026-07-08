@@ -1,0 +1,12 @@
+{
+  "credentialCsvPath": "C:/Users/ecydm/Downloads/credentials.csv",
+  "projectId": "34b18a5966e2477a948d239185d98140",
+  "regionId": "cn-east-3",
+  "derivedAuthServiceName": "iotda",
+  "iotdaApiEndpoint": "https://e539e002e3.st1.iotda-app.cn-east-3.myhuaweicloud.com",
+  "deviceId": "6a48c2ab18855b39c52bdc10_gateway001",
+  "serviceId": "GatewayCare",
+  "listenHost": "127.0.0.1",
+  "listenPort": 8790,
+  "pollIntervalMs": 1000
+}

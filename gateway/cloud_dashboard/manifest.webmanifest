@@ -1,0 +1,8 @@
+{
+  "name": "华为云雷达数据看板",
+  "short_name": "雷达看板",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f4f7fb",
+  "theme_color": "#13213a"
+}

@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>雷达网关调试面板</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <h1>雷达网关调试面板</h1>
+      <p>实时查看 SLE 雷达包、跌倒提示、异常活动波动和华为云上报状态。</p>
+    </div>
+    <div class="topbar-status">
+      <span id="lastSeen">暂无数据</span>
+      <span id="liveDot" class="dot" aria-hidden="true"></span>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="hero-grid" aria-label="核心判断">
+      <article class="hero-panel fall-panel" id="fallHero">
+        <span class="label">疑似跌倒提示</span>
+        <strong id="fallHeroValue">未触发</strong>
+        <small id="fallHeroHint">等待网关 fall_result 或雷达 fall_feature</small>
+        <div class="hero-meta">
+          <div><span>来源</span><b id="fallHeroSource">--</b></div>
+          <div><span>原因</span><b id="fallHeroReason">--</b></div>
+          <div><span>特征位</span><b id="fallFeatureText">--</b></div>
+        </div>
+      </article>
+
+      <article class="hero-panel wave-panel" id="waveHero">
+        <span class="label">异常活动波动提示</span>
+        <strong id="waveHeroValue">未触发</strong>
+        <small id="waveHeroHint">等待网关 convulsion_result 或雷达 radar_wave</small>
+        <div class="hero-meta">
+          <div><span>原因</span><b id="waveHeroReason">--</b></div>
+          <div><span>雷达提示</span><b id="radarWaveText">--</b></div>
+          <div><span>窗口指标</span><b id="waveMetricText">--</b></div>
+        </div>
+      </article>
+    </section>
+
+    <section class="summary-grid" aria-label="实时数据">
+      <article class="metric-panel">
+        <span class="label">motion_level</span>
+        <strong id="motionLevel">--</strong>
+        <div class="meter"><span id="motionBar"></span></div>
+      </article>
+      <article class="metric-panel">
+        <span class="label">static_time</span>
+        <strong id="staticDuration">--</strong>
+        <small>雷达包中的低活动持续时间</small>
+      </article>
+      <article class="metric-panel">
+        <span class="label">packet_seq</span>
+        <strong id="packetSeq">--</strong>
+        <small id="packetRate">0 packets/min</small>
+      </article>
+      <article class="metric-panel">
+        <span class="label">sample_seq / new_sample</span>
+        <strong id="sampleSeqText">--</strong>
+        <small id="newSampleText">--</small>
+      </article>
+    </section>
+
+    <section class="content-grid">
+      <article class="panel chart-panel">
+        <div class="panel-title">
+          <div>
+            <h2>motion_level 曲线</h2>
+            <p>绿色为低活动，黄色为明显活动，红色为强活动。CSV 会导出包、跌倒、波动、云端和原始日志字段。</p>
+          </div>
+          <button class="ghost-button" id="exportCsvButton" type="button">导出 CSV</button>
+        </div>
+        <canvas id="motionChart" width="960" height="280" aria-label="motion level trend chart"></canvas>
+      </article>
+
+      <article class="panel state-panel">
+        <h2>链路状态</h2>
+        <div class="status-row"><span>串口</span><strong id="serialState">未连接</strong></div>
+        <div class="status-row"><span>SLE 扫描</span><strong id="scanState">未知</strong></div>
+        <div class="status-row"><span>SLE 连接</span><strong id="sleState">未知</strong></div>
+        <div class="status-row"><span>Notify</span><strong id="notifyState">未知</strong></div>
+        <div class="status-row"><span>雷达包</span><strong id="radarState">未知</strong></div>
+        <div class="status-row"><span>华为云</span><strong id="cloudState">未知</strong></div>
+      </article>
+
+      <article class="panel detail-panel">
+        <h2>跌倒判断细节</h2>
+        <div class="detail-list">
+          <div><span>fall_result</span><strong id="fallState">--</strong></div>
+          <div><span>official_83_81</span><strong id="officialFall">--</strong></div>
+          <div><span>local_rule</span><strong id="localFall">--</strong></div>
+          <div><span>composite_hold</span><strong id="compositeFall">--</strong></div>
+          <div><span>fall_feature</span><strong id="fallFeature">--</strong></div>
+          <div><span>fall_reason</span><strong id="fallReason">--</strong></div>
+          <div><span>low_observe</span><strong id="lowObserve">--</strong></div>
+        </div>
+      </article>
+
+      <article class="panel detail-panel">
+        <h2>异常活动波动细节</h2>
+        <div class="detail-list">
+          <div><span>convulsion_result</span><strong id="convulsionState">--</strong></div>
+          <div><span>convulsion_reason</span><strong id="convulsionReason">--</strong></div>
+          <div><span>amp / cross / peak</span><strong id="convulsionMetrics">--</strong></div>
+          <div><span>strong / max_run</span><strong id="strongRun">--</strong></div>
+          <div><span>high_ratio</span><strong id="highRatio">--</strong></div>
+          <div><span>radar_wave</span><strong id="radarWaveHint">--</strong></div>
+          <div><span>conv_feature</span><strong id="convFeature">--</strong></div>
+        </div>
+      </article>
+
+      <article class="panel detail-panel">
+        <h2>雷达包特征</h2>
+        <div class="detail-list">
+          <div><span>new_sample</span><strong id="newSample">--</strong></div>
+          <div><span>sample_seq_lo</span><strong id="sampleSeqLo">--</strong></div>
+          <div><span>sensor_flags</span><strong id="sensorFlags">--</strong></div>
+          <div><span>low_posture</span><strong id="lowPosture">--</strong></div>
+          <div><span>fall_candidate</span><strong id="fallCandidate">--</strong></div>
+          <div><span>radar_online</span><strong id="radarOnline">--</strong></div>
+        </div>
+      </article>
+
+      <article class="panel events-panel">
+        <div class="panel-title">
+          <div>
+            <h2>事件时间线</h2>
+            <p>只记录关键事件，不再每包刷屏。</p>
+          </div>
+          <button class="ghost-button" id="clearButton" type="button">清空</button>
+        </div>
+        <ol id="eventList" class="event-list"></ol>
+      </article>
+
+      <article class="panel raw-log-panel">
+        <div class="panel-title">
+          <div>
+            <h2>原始网关日志</h2>
+            <p>保留跌倒、异常波动、SLE、CRC、云端和 packet 特征行。导出日志会保存完整记录。</p>
+          </div>
+          <div class="button-row compact-row">
+            <button class="ghost-button" id="pauseLogButton" type="button">暂停滚动</button>
+            <button class="ghost-button" id="copyLogButton" type="button">复制日志</button>
+            <button class="ghost-button" id="exportLogButton" type="button">导出日志</button>
+          </div>
+        </div>
+        <pre id="rawLog" class="raw-log" aria-label="Raw gateway logs"></pre>
+      </article>
+    </section>
+
+    <section class="input-grid">
+      <article class="panel input-panel">
+        <h2>实时输入</h2>
+        <div class="control-row">
+          <button id="serialButton" type="button">连接串口</button>
+          <select id="baudRate" aria-label="Baud rate">
+            <option value="115200" selected>115200</option>
+            <option value="921600">921600</option>
+            <option value="460800">460800</option>
+            <option value="230400">230400</option>
+          </select>
+          <button id="disconnectSerialButton" class="ghost-button" type="button">断开</button>
+        </div>
+        <div class="control-row">
+          <input id="wsUrl" type="text" spellcheck="false" placeholder="ws://127.0.0.1:8787/radar">
+          <button id="connectWsButton" type="button">连接 WS</button>
+        </div>
+        <textarea id="rawInput" spellcheck="false" placeholder="也可以把网关串口日志粘贴到这里，例如：[GATEWAY] packet seq=12 motion=43 static=800 fall_feature=0x00 conv_feature=0x84 new_sample=1 radar_wave=1 ..."></textarea>
+        <div class="button-row">
+          <button id="applyButton" type="button">解析文本</button>
+          <button id="demoButton" type="button">模拟数据</button>
+        </div>
+      </article>
+
+      <article class="panel schema-panel">
+        <h2>识别的关键日志</h2>
+        <pre>[GATEWAY] packet seq=18 motion=42 static=1500 fall_feature=0x05 conv_feature=0x88 new_sample=1 radar_wave=1 low_posture=0 fall_candidate=0 sample_seq_lo=31 sensor_flags=0x0d
+[GATEWAY] fall_result=1 low_observe=0 reason=radar_fall_feature_confirmed
+[GATEWAY] convulsion_result=1 amp=50 cross=4 peak=2 strong=2 high_ratio=16 max_high_run=1 reason=abnormal_motion_wave</pre>
+      </article>
+    </section>
+  </main>
+
+  <script src="./app.js"></script>
+</body>
+</html>
